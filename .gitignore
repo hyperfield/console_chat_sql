@@ -1,0 +1,59 @@
+# Created by https://www.toptal.com/developers/gitignore/api/c++
+# Edit at https://www.toptal.com/developers/gitignore?templates=c++
+
+### C++ ###
+# Compiled executables
+# chat_client
+# chat_server
+
+# Code editors, environments #
+*.code-workspace
+*.kdev?
+.cproject
+.settings/
+.vscode/
+.project
+.message.cpp.kate-swp
+
+# Config files
+# users.txt
+# messages.txt
+
+# Prerequisites
+*.d
+
+# Compiled Object files
+*.slo
+*.lo
+*.o
+*.obj
+
+# Precompiled Headers
+*.gch
+*.pch
+
+# Compiled Dynamic libraries
+*.so
+*.dylib
+*.dll
+
+# Fortran module files
+*.mod
+*.smod
+
+# Compiled Static libraries
+*.lai
+*.la
+*.a
+*.lib
+
+# Executables
+*.exe
+*.out
+*.app
+
+# Development temporaries
+sql/
+*.sql
+
+# End of https://www.toptal.com/developers/gitignore/api/c++
