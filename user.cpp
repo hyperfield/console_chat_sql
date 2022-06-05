@@ -18,10 +18,14 @@ const bool authenticateUser(const std::string &login, uint* hash, const std::vec
 
 
 User::User(const std::string &login, uint *hash, const std::string &name, const std::string &email):
-    _login(login), _hash(hash), _name(name), _email(email) {
-    // cout << "New user created. Login: " << _login << ". Email: " << _email << ". Name: " << _name << endl;
-}
+    _login(login), _hash(hash), _name(name), _email(email) {}
 
+User::User() {
+    _login = "all";
+    _hash = 0;
+    _name = "All";
+    _email = "default@email.none";
+}
 
 const std::string& User::getName() const {
     return _name;

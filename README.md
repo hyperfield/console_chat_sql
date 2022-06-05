@@ -1,45 +1,36 @@
 ## A simple Console Chat with authentication and private messages
+### This version uses MySQL instead of text files for saving user and message data
+### (under development)
 
 This is a simple Console Chat program, which has a client and a server side. New features and improvements are being added periodiclaly. The purpose of this program is mainly for the author to develop his C++ skills.
 
 Chat functionality:
 
-- client side and server side 
-  (only authentication-related functions are currently supposted remotely, messages are passed locally)
+- client side and server side
 - registration of users
-- user password change (supported remotely)
+- user password change
 - sending and viewing of common and private messages
 - password hashing
 - saving of users, their hashes and their messages in configuration files
 
-The configuration files are kept in the directory
-
-    ~/.config/console-chat
-
-on Linux or MacOS X, where `~` is the shortcut to the user home directory. Or
-
-    %UserDir%\.config\console-chat
-
-on Windows, where `%UserDir%` is the user directory, such as `C:\Users\my_user\`.
-
-Console Chat features:
-- No password echoing in the terminal.
-- Gives an error when trying to register an existing user.
-- Gives a message that the user does not exist if trying to send a private message to a non-existing user.
-- All chat users and messages are loaded from the configuration files when Console Chat is loaded.
-- New chat users and messages are saved to configuration files when Console Chat is quit.
-
 ## Installation
+
+### Prerequisites
+
+    g++ (GNU C++ compiler)
+    make (GNU utility to maintain groups of programs)
+    MySQL
 
 To get your copy of the program from Github, make sure that `git` in installed on your system and do
 
-    git clone https://github.com/hyperfield/console_chat.git
-    cd console_chat
+    git clone https://github.com/hyperfield/console_chat_sql.git
+    cd console_chat_sql
 
 In the program catalog, go to either the `client` or the `server` directory (e.g., `cd client`) and do
 
     make
     make install
+    make clean
 
 But if your OS is Windows, then `make install` is not needed.
 

@@ -9,7 +9,7 @@
 class User {
 public:
     User(const std::string &login, uint *hash, const std::string &name, const std::string &email);
-    User() = default;
+    User();
     ~User() = default;
     void userInfo() const;
     const std::string& getName() const;

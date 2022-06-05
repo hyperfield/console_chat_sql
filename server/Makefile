@@ -1,5 +1,17 @@
-chat: userlib messagelib passwordlib sha1lib
-	g++ -o chat_server main_server.cpp -L. -luser -lmessage -lpasswordShadow -lsha1 `mysql_config --cflags --libs` -std=c++17
+chat: commandslib databaselib userlib messagelib passwordlib sha1lib consolelib networklib
+	g++ -o chat_server main_server.cpp -L. -lcommands -ldatabase -lconsole -lnetwork -luser -lmessage -lpasswordShadow -lsha1 `mysql_config --cflags --libs` -std=c++17
+
+commandslib: commands.cpp ../headers/commands.h
+	g++ -c commands.cpp -o commands.o -std=c++17
+	ar rc libcommands.a commands.o
+
+consolelib: ../console.cpp ../headers/console.h
+	g++ -c ../console.cpp -o console.o -std=c++17
+	ar rc libconsole.a console.o
+
+databaselib: database.cpp ../headers/database.h
+	g++ -c database.cpp -o database.o -std=c++17
+	ar rc libdatabase.a database.o
 
 userlib: ../user.cpp ../headers/user.h
 	g++ -c ../user.cpp -o user.o -std=c++17
@@ -9,6 +21,10 @@ messagelib: ../message.cpp ../headers/message.h
 	g++ -c ../message.cpp -o message.o -std=c++17
 	ar rc libmessage.a message.o
 	
+networklib: ../network.cpp ../headers/network.h
+	g++ -c ../network.cpp -o network.o -std=c++17
+	ar rc libnetwork.a network.o
+
 passwordlib: ../passwordShadow.cpp ../headers/passwordShadow.h
 	g++ -o passwordShadow.o ../passwordShadow.cpp -c -std=c++17
 	ar rc libpasswordShadow.a passwordShadow.o

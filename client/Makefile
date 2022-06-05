@@ -1,5 +1,9 @@
-chat: userlib messagelib passwordlib sha1lib
-	g++ -o chat_client main_client.cpp -L. -lmessage -luser -lpasswordShadow -lsha1 -std=c++17
+chat: userlib networklib messagelib passwordlib sha1lib consolelib
+	g++ -o chat_client main_client.cpp -L. -lconsole -lnetwork -lmessage -luser -lpasswordShadow -lsha1 -std=c++17
+
+consolelib: ../console.cpp ../headers/console.h
+	g++ -c ../console.cpp -o console.o -std=c++17
+	ar rc libconsole.a console.o
 
 userlib: ../user.cpp ../headers/user.h
 	g++ -c ../user.cpp -o user.o -std=c++17
@@ -8,7 +12,11 @@ userlib: ../user.cpp ../headers/user.h
 messagelib: ../message.cpp ../headers/message.h
 	g++ -c ../message.cpp -o message.o -std=c++17
 	ar rc libmessage.a message.o
-	
+
+networklib: ../network.cpp ../headers/network.h
+	g++ -c ../network.cpp -o network.o -std=c++17
+	ar rc libnetwork.a network.o
+
 passwordlib: ../passwordShadow.cpp ../headers/passwordShadow.h
 	g++ -o passwordShadow.o ../passwordShadow.cpp -c -std=c++17
 	ar rc libpasswordShadow.a passwordShadow.o
