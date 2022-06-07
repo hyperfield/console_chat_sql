@@ -10,7 +10,9 @@
 using namespace std;
 
 Message::Message(const std::string& message, const std::string& login, const std::string& forUser):
-    _message(message), _author(login), _forUser(forUser) {}
+    _message(message), _author(login), _forUser(forUser)
+{
+}
 
 
 // const string Message::getMessage(const string &login, uint* hash, const vector<User> &users) const {

@@ -1,39 +1,42 @@
-    #include <chrono>
+#include <chrono>
 #include <arpa/inet.h>
 #include <cstring>
 #include <iostream>
+#include <mysql/mysql.h>
+#include <thread>
 #include <unistd.h>
 
 #include "headers/message.h"
 #include "headers/sha1.h"
 #include "headers/constants.h"
+#include "headers/commands.h"
 
 
-void transmit_message(Message& message, int& socket_file_descriptor, bool& message_is_accepted) {
+void transmit_message(Message& message, int& sock, bool& message_is_accepted) {
     message_is_accepted = false;
     char command[] = "transmit_message";
-    int bytes = write(socket_file_descriptor, command, cmd_size);
+    int bytes = write(sock, command, cmd_size);
     if (bytes > 0) {
         bytes = -1;
-        bytes = write(socket_file_descriptor, message.getMessage().c_str(), msg_size);
+        bytes = write(sock, message.getMessage().c_str(), msg_size);
         if (bytes <= 0) {
             cout << CONNECTION_LOST_CLIENT_MSG << endl;
             return;
         }
         bytes = -1;
-        bytes = write(socket_file_descriptor, message.getAuthor().c_str(), usr_size);
+        bytes = write(sock, message.getAuthor().c_str(), usr_size);
         if (bytes <= 0) {
             cout << CONNECTION_LOST_CLIENT_MSG << endl;
             return;
         }
         bytes = -1;
-        bytes = write(socket_file_descriptor, message.forWhom().c_str(), usr_size);
+        bytes = write(sock, message.forWhom().c_str(), usr_size);
         if (bytes <= 0) {
             cout << CONNECTION_LOST_CLIENT_MSG << endl;
             return;
         }
         bytes = -1;
-        bytes = read(socket_file_descriptor, (char*) &message_is_accepted, size_of_bool);
+        bytes = read(sock, (char*) &message_is_accepted, size_of_bool);
         if (bytes <= 0) {
             cout << CONNECTION_LOST_CLIENT_MSG << endl;
             return;
@@ -51,20 +54,20 @@ void send_new_message(const std::string &message, const std::string &author,
 }
 
 
-const bool user_exists(std::string& login, int& socket_file_descriptor) {
+const bool user_exists(std::string& login, int& sock) {
     char command[] = "check_user_exists";
     ssize_t bytes = -1;
-    bytes = write(socket_file_descriptor, command, cmd_size);
+    bytes = write(sock, command, cmd_size);
     bool login_exists = false;
     if (bytes > 0) {
       bytes = -1;
-      bytes = write(socket_file_descriptor, login.c_str(), usr_size);
+      bytes = write(sock, login.c_str(), usr_size);
       if (bytes <= 0) {
         cout << CONNECTION_LOST_CLIENT_MSG << endl;
         // TODO: Handle lost connection
       }
       else {
-        read(socket_file_descriptor, (char*) &login_exists, size_of_bool);
+        read(sock, (char*) &login_exists, size_of_bool);
       }
     }
     return login_exists;
@@ -72,34 +75,34 @@ const bool user_exists(std::string& login, int& socket_file_descriptor) {
 
 
 const bool password_is_correct(const std::string& login, const std::string &password,
-                               uint* &hash, int& socket_file_descriptor)
+                               uint* &hash, int& sock)
 {
     hash = sha1(password.c_str(), password.length());
     char command[] = "check_user_password";
-    ssize_t bytes = write(socket_file_descriptor, command, cmd_size);
+    ssize_t bytes = write(sock, command, cmd_size);
     bool password_is_correct = false;
     if (bytes > 0) {
         bytes = -1;
-        bytes = write(socket_file_descriptor, (char*) hash, hsh_size);
+        bytes = write(sock, (char*) hash, hsh_size);
         if (bytes > 0)
-            read(socket_file_descriptor, (char*) &password_is_correct, size_of_bool);
+            read(sock, (char*) &password_is_correct, size_of_bool);
     }
     return password_is_correct;
 }
 
 
-void show_messages(const std::string& login, const std::string& all, int& socket_file_descriptor) {
+void show_messages(const std::string& login, const std::string& all, int& sock) {
     char recipient[32], sender[32], message[1024];
     std::vector<Message> messages;
     std::string end = "end";
     char command[] = "get_messages";
-    ssize_t bytes = write(socket_file_descriptor, command, cmd_size);
+    ssize_t bytes = write(sock, command, cmd_size);
     if (bytes > 0) {
         while(true) {
-            read(socket_file_descriptor, (char*) &message, msg_size);
+            read(sock, (char*) &message, msg_size);
             if (message == end) break;
-            read(socket_file_descriptor, (char*) &sender, usr_size);
-            bytes = read(socket_file_descriptor, (char*) &recipient, usr_size);
+            read(sock, (char*) &sender, usr_size);
+            bytes = read(sock, (char*) &recipient, usr_size);
             Message new_message(message, sender, recipient);
             messages.push_back(new_message);
             // Reset the char arrays
@@ -121,78 +124,84 @@ void show_messages(const std::string& login, const std::string& all, int& socket
 }
 
 
-void establish_connection(int& socket_file_descriptor, const char* connection_ip,
+void establish_connection(int& sock, const char* connection_ip,
                           int& connection, bool& connection_success)
 {
     struct sockaddr_in serveraddress, client;
-    socket_file_descriptor = socket(AF_INET, SOCK_STREAM, 0); // Create a socket
-    if(socket_file_descriptor == -1) {
+    sock = socket(AF_INET, SOCK_STREAM, 0); // Create a socket
+    if(sock == -1) {
         return;
     }
     serveraddress.sin_addr.s_addr = inet_addr(connection_ip);
     serveraddress.sin_port = htons(PORT);
     serveraddress.sin_family = AF_INET; // Using IPv4
-    connection = connect(socket_file_descriptor, (struct sockaddr*)& serveraddress, sizeof(serveraddress));
+    connection = connect(sock, (struct sockaddr*)& serveraddress, sizeof(serveraddress));
     connection_success = connection != -1;
 }
 
 
-bool hang_up(int& socket_file_descriptor) {
+bool hang_up(int& sock) {
     char command[] = "hang_up";
-    size_t bytes = write(socket_file_descriptor, command, sizeof(command));
-    return close(socket_file_descriptor);
+    size_t bytes = write(sock, command, sizeof(command));
+    if (shutdown(sock, SHUT_RDWR)) {
+        cout << "Socket was shut down\n";
+    }
+    else {
+        cout << "Socket was not shut down\n";
+    }
+    return close(sock);
 }
 
 
-bool change_user_password(int& socket_file_descriptor, string& login,
+bool change_user_password(int& sock, string& login,
                           uint* current_hash, uint* new_hash)
 {
     bool password_changed = false;
     char command[] = "change_user_password";
-    ssize_t bytes = write(socket_file_descriptor, command, cmd_size);
+    ssize_t bytes = write(sock, command, cmd_size);
     if (bytes > 0) {
-        write(socket_file_descriptor, login.c_str(), usr_size);
-        write(socket_file_descriptor, (char*) current_hash, hsh_size);
-        write(socket_file_descriptor, (char*) new_hash, hsh_size);
-        read(socket_file_descriptor, (char*) &password_changed, size_of_bool);
+        write(sock, login.c_str(), usr_size);
+        write(sock, (char*) current_hash, hsh_size);
+        write(sock, (char*) new_hash, hsh_size);
+        read(sock, (char*) &password_changed, size_of_bool);
     }
     return password_changed;
 }
 
 
-bool accept_connection(int& socket_file_descriptor, int& connection) {
-    struct sockaddr_in serveraddress, client;
+void take_commands(int& connection, int& sock, MYSQL& mysql) {
+    cout << "Take commands session started\n";
+    char command[cmd_size], login[usr_size];
+    while (true) {
+        cout << "In take_commands loop\n";
+        int bytes = read(connection, command, cmd_size);
+        cout << "Fn read received " << bytes << " bytes\n";
+        if (!strcmp(command, "hang_up") || bytes == 0) {
+            // close(sock);
+            close(connection);
+            cout << "Client has disconnected\n";
+            break;
+        }
+        else {
+            process_connection_command(command, connection, login,
+                                       usr_size, mysql);
+        }
+    }
+}
+
+
+bool accept_connection(int& sock, int connection, MYSQL& mysql) {
+    int client, conn;
     socklen_t length;
-    socket_file_descriptor = socket(AF_INET, SOCK_STREAM, 0);
-    if (socket_file_descriptor < 0) {
-        return false;
+    while (true) {
+        conn = accept(sock, (struct sockaddr*) &client, &length);
+        if(conn < 0) {
+            return false;
+        }
+        // thread t(take_commands, ref(connection), ref(sock), ref(mysql));
+        // t.join();
+        cout << "Launching take_commands\n";
+        take_commands(connection, sock, mysql);
+        return true;
     }
-    bzero((char *) &serveraddress, sizeof(serveraddress));
-    // Define server address
-    serveraddress.sin_addr.s_addr = htonl(INADDR_ANY);
-    // Define port number
-    serveraddress.sin_port = htons(PORT);
-    // Using IPv4
-    serveraddress.sin_family = AF_INET;
-    // Establish a connection with the server
-    int bind_status = bind(socket_file_descriptor, (struct sockaddr*) &serveraddress, sizeof(serveraddress));
-    if (bind_status == -1)  {
-        cout << "Socket binding failed" << endl;
-        return false;
-    }
-    else {
-        cout << "Socket binding succeeded" << endl;
-    }
-    // Set the server to accept data
-    int connection_status = listen(socket_file_descriptor, 5);
-
-    if (connection_status < 0) {
-        return false;
-    }
-
-    connection = accept(socket_file_descriptor, (struct sockaddr*) &client, &length);
-    if(connection < 0) {
-        return false;
-    }
-    return true;
 }

@@ -1,3 +1,4 @@
+#include <iostream>
 #include <mysql/mysql.h>
 
 #include "../headers/user.h"
@@ -8,18 +9,20 @@ using std::to_string;
 
 
 const bool write_user_to_db(const User &user_obj, MYSQL &mysql) {
-  std::string query = "SELECT create_user('";
-  query += user_obj.getEmail();
-  query += "', '";
-  query += user_obj.getName();
-  query += "', '";
-  query += user_obj.getLogin();
-  query += "', '";
-  query += std::to_string(*user_obj.getHash());
-  query += "')";
-  int result = mysql_query(&mysql, query.c_str());
-  return !result;
+    // TODO: Escape user names
+    std::string query = "SELECT create_user('";
+    query += user_obj.getEmail();
+    query += "', '";
+    query += user_obj.getName();
+    query += "', '";
+    query += user_obj.getLogin();
+    query += "', '";
+    query += std::to_string(*user_obj.getHash());
+    query += "')";
+    int result = mysql_query(&mysql, query.c_str());
+    return !result;
 }
+
 
 const int user_exists(const std::string &login, MYSQL& mysql) {
     std::string query = "SELECT * from `users` WHERE `user_name`='";
@@ -106,8 +109,14 @@ const bool write_message_to_db(Message& message_obj, MYSQL& mysql) {
     query += "', '";
     query += to_string(forwhom_id);
     query += "', '";
-    query += message_obj.getMessage();
+    std::string message = message_obj.getMessage();
+    int len = message.length();
+    char* escaped_message = new char[len];
+    mysql_real_escape_string(&mysql, escaped_message, message.c_str(), len);
+    query += escaped_message;
     query += "')";
+    std::cout << "Unescaped message: " << message << std::endl;
+    std::cout << "Escaped message: " << escaped_message << std::endl;
     int result = mysql_query(&mysql, query.c_str());
     return !result;
 }

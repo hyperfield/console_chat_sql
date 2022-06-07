@@ -1,5 +1,6 @@
 #pragma once
 #include "message.h"
+#include <mysql/mysql.h>
 
 
 void establish_connection(int& socket_file_descriptor, const char* connection_ip,
@@ -14,4 +15,6 @@ void show_messages(const std::string& login, const std::string& all, int& socket
 bool hang_up(int& socket_file_descriptor);
 bool change_user_password(int& socket_file_descriptor, std::string& login,
                           uint* current_hash, uint* new_hash);
-bool accept_connection(int& socket_file_descriptor, int& connection);
+bool accept_connection(int& socket_file_descriptor, int connection);
+void take_commands(int& connection, int& sock, MYSQL& mysql);
+bool accept_connection(int& sock, int connection, MYSQL& mysql);

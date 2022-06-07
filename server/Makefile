@@ -1,5 +1,5 @@
 chat: commandslib databaselib userlib messagelib passwordlib sha1lib consolelib networklib
-	g++ -o chat_server main_server.cpp -L. -lcommands -ldatabase -lconsole -lnetwork -luser -lmessage -lpasswordShadow -lsha1 `mysql_config --cflags --libs` -std=c++17
+	g++ -o chat_server main_server.cpp -L. -ldatabase -lconsole -lnetwork -lcommands -luser -lmessage -lpasswordShadow -lsha1 `mysql_config --cflags --libs` -std=c++17
 
 commandslib: commands.cpp ../headers/commands.h
 	g++ -c commands.cpp -o commands.o -std=c++17

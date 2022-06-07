@@ -1,3 +1,4 @@
+#include <cstring>
 #include <iostream>
 #include <mysql/mysql.h>
 #include <unistd.h>
@@ -108,4 +109,28 @@ void command_get_messages(int& connection, char login[], MYSQL& mysql) {
     }
     char end[] = "end";
     write(connection, end, 4);
+}
+
+
+void process_connection_command(char command[], int& connection, char login[],
+                                int param_size, MYSQL& mysql) {
+    cout << "Received command " << command << endl;
+    if (!strcmp(command, "check_user_exists")) {
+        command_check_user_exists(connection, login, param_size, mysql);
+    }
+    else if (!strcmp(command, "check_user_password")) {
+        command_check_user_password(connection, login, mysql);
+    }
+    else if (!strcmp(command, "change_user_password")) {
+        command_change_user_password(connection, login, mysql);
+    }
+    else if (!strcmp(command, "transmit_message")) {
+        command_transmit_message(connection, mysql);
+    }
+    else if (!strcmp(command, "get_messages")) {
+        command_get_messages(connection, login, mysql);
+    }
+    // else {
+    //     cout << "No such command\n";
+    // }
 }

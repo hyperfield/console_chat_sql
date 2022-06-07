@@ -1,9 +1,17 @@
-chat: userlib networklib messagelib passwordlib sha1lib consolelib
-	g++ -o chat_client main_client.cpp -L. -lconsole -lnetwork -lmessage -luser -lpasswordShadow -lsha1 -std=c++17
+chat: commandslib databaselib userlib networklib messagelib passwordlib sha1lib consolelib
+	g++ -o chat_client main_client.cpp -L. -lconsole -lnetwork -lmessage -luser -lpasswordShadow -lcommands -ldatabase -lsha1 `mysql_config --cflags --libs` -std=c++17
+
+commandslib: ../server/commands.cpp ../headers/commands.h
+	g++ -c ../server/commands.cpp -o commands.o -std=c++17
+	ar rc libcommands.a commands.o
 
 consolelib: ../console.cpp ../headers/console.h
 	g++ -c ../console.cpp -o console.o -std=c++17
 	ar rc libconsole.a console.o
+
+databaselib: ../server/database.cpp ../headers/database.h
+	g++ -c ../server/database.cpp -o database.o -std=c++17
+	ar rc libdatabase.a database.o
 
 userlib: ../user.cpp ../headers/user.h
 	g++ -c ../user.cpp -o user.o -std=c++17

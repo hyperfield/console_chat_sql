@@ -19,6 +19,7 @@ public:
     const std::string& forWhom() const;
     void messageInfo(const std::string &login, uint* hash, const std::vector<User> &users) const;
     void messageInfo() const;
+    void clean_message();
     friend std::fstream& operator >>(std::fstream& is, Message& obj);
     friend std::ostream& operator <<(std::ostream& os, const Message& obj);
 

@@ -144,11 +144,11 @@ void change_user_password_wrapper(uint* hash, std::string& login,
 }
 
 
-void show_message_menu(std::string& login, int& socket_file_descriptor)
+void show_message_menu(std::string& login, int& sock)
 {
     std::cout << "\nShowing messages for user " << login << std::endl;
     std::string all = "all"; // Placeholder for "all users"
-    show_messages(login, all, socket_file_descriptor);
+    show_messages(login, all, sock);
     char key;
     while (key != 'q') {
       cout << "\nPlease choose:\n\nw - Send a chat message\np - Send a private "
@@ -156,11 +156,11 @@ void show_message_menu(std::string& login, int& socket_file_descriptor)
       cin >> key;
       switch (key) {
       case 'w':
-        send_chat_message(login, all, socket_file_descriptor);
+        send_chat_message(login, all, sock);
         break;
 
       case 'p':
-        send_private_message(login, all, socket_file_descriptor);
+        send_private_message(login, all, sock);
         break;
         }
     }

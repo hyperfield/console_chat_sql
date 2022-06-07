@@ -1,3 +1,4 @@
+#pragma once
 #include "message.h"
 #include "user.h"
 #include <mysql/mysql.h>
