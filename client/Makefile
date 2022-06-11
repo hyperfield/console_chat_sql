@@ -9,8 +9,8 @@ consolelib: ../console.cpp ../headers/console.h
 	g++ -c ../console.cpp -o console.o -std=c++17
 	ar rc libconsole.a console.o
 
-databaselib: ../server/database.cpp ../headers/database.h
-	g++ -c ../server/database.cpp -o database.o -std=c++17
+databaselib: ../database.cpp ../headers/database.h
+	g++ -c ../database.cpp -o database.o -std=c++17
 	ar rc libdatabase.a database.o
 
 userlib: ../user.cpp ../headers/user.h

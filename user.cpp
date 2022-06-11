@@ -7,7 +7,7 @@
 #include <string>
 
 
-const bool authenticateUser(const std::string &login, uint* hash, const std::vector<User> &users) {
+bool authenticateUser(const std::string &login, uint* hash, const std::vector<User> &users) {
     for (auto &user : users) {
         if (user.getLogin() == login && *(user.getHash()) == *hash) {
             return true;
@@ -20,12 +20,11 @@ const bool authenticateUser(const std::string &login, uint* hash, const std::vec
 User::User(const std::string &login, uint *hash, const std::string &name, const std::string &email):
     _login(login), _hash(hash), _name(name), _email(email) {}
 
-User::User() {
-    _login = "all";
-    _hash = 0;
-    _name = "All";
-    _email = "default@email.none";
-}
+User::User():
+    _login("all"),
+    _hash(0),
+    _name("All"),
+    _email("default@email.none") {}
 
 const std::string& User::getName() const {
     return _name;
@@ -45,7 +44,7 @@ uint* User::getHash() const {
 }
 
 
-const bool User::changePassword(uint *hash, uint* newHash) {
+bool User::changePassword(uint *hash, uint* newHash) {
     if (*_hash == *hash) {
         memcpy(_hash, newHash, SHA1HASHLENGTHBYTES);
         return true;

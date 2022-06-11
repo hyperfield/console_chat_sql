@@ -1,14 +1,33 @@
 #include <iostream>
 #include <mysql/mysql.h>
+#include "headers/console.h"
+#include "headers/user.h"
+#include "headers/message.h"
+#include "headers/sha1.h"
 
-#include "../headers/user.h"
-#include "../headers/message.h"
-
-using std::vector;
+using std::cout;
+using std::endl;
 using std::to_string;
+using std::vector;
 
 
-const bool write_user_to_db(const User &user_obj, MYSQL &mysql) {
+void connect_to_db(MYSQL &mysql) {
+  // TODO: Read db info from config
+  if (!mysql_real_connect(&mysql, "localhost", "chat_root", "#Ch@7R00T!",
+                          "chat_db", 0, NULL, 0))
+    {
+    cout << "Error: unable to connect to MySQL due to the following error: "
+         << mysql_error(&mysql) << endl;
+    exit(1);
+    }
+  else {
+    mysql_set_character_set(&mysql, "utf8");
+    cout << "Successfully connected to MySQL database." << endl;
+  }
+}
+
+
+bool write_user_to_db(const User &user_obj, MYSQL &mysql) {
     // TODO: Escape user names
     std::string query = "SELECT create_user('";
     query += user_obj.getEmail();
@@ -24,7 +43,7 @@ const bool write_user_to_db(const User &user_obj, MYSQL &mysql) {
 }
 
 
-const int user_exists(const std::string &login, MYSQL& mysql) {
+int user_exists(const std::string &login, MYSQL& mysql) {
     std::string query = "SELECT * from `users` WHERE `user_name`='";
     query += login + "'";
     mysql_query(&mysql, query.c_str());
@@ -38,7 +57,7 @@ const int user_exists(const std::string &login, MYSQL& mysql) {
 }
 
 
-const bool update_user_pwdhash_in_DB(const User& user_obj, MYSQL& mysql) {
+bool update_user_pwdhash_in_DB(const User& user_obj, MYSQL& mysql) {
     int user_id = user_exists(user_obj.getLogin(), mysql);
     std::string query = "UPDATE user_auth SET `pwd_hash`=";
     query += std::to_string(*user_obj.getHash());
@@ -84,7 +103,7 @@ const vector<Message> read_messages_from_db(int how_many, char login[],
   MYSQL_RES *res = mysql_store_result(&mysql);
   while (MYSQL_ROW row = mysql_fetch_row(res)) {
     int sender_id = atoi(row[1]);
-    int receiver_id = atoi(row[2]);
+    receiver_id = atoi(row[2]);
     std::string sender = get_user_by_id(sender_id, mysql);
     if (receiver_id == receiver_id_all)
       receiver = "all";
@@ -98,7 +117,7 @@ const vector<Message> read_messages_from_db(int how_many, char login[],
 }
 
 
-const bool write_message_to_db(Message& message_obj, MYSQL& mysql) {
+bool write_message_to_db(const Message& message_obj, MYSQL& mysql) {
     std::string query = "INSERT INTO messages("
                    "`sender_id`, `receiver_id`, `message`"
                    ") VALUES('";
@@ -124,7 +143,7 @@ const bool write_message_to_db(Message& message_obj, MYSQL& mysql) {
 
 // Create a new user and place it into DB.
 // Return true if successful, return false if user is already in DB.
-const bool new_user(const std::string &login, uint *hash, const std::string &name,
+bool new_user(const std::string &login, uint *hash, const std::string &name,
                    const std::string &email, User &user, MYSQL &mysql)
 {
     if (user_exists(login, mysql)) {
@@ -168,7 +187,31 @@ User find_user(const std::string &login, uint* hash, MYSQL &mysql) {
 }
 
 
-const bool check_password(const std::string &login, uint* &hash, MYSQL &mysql) {
+bool check_password(const std::string &login, uint* &hash, MYSQL &mysql)
+{
     User check_pwd_user = find_user(login, hash, mysql);
     return (check_pwd_user.getLogin() == login && *check_pwd_user.getHash() == *hash);
+}
+
+
+void create_new_user(MYSQL& mysql) {
+    User user;
+    std::string login, name, email;
+    bool password_flag = false;
+    cout << "Please enter new user login: ";
+    std::cin >> login;
+    std::string new_password;
+    set_password(password_flag, new_password);
+    uint *hash = sha1(new_password.c_str(), new_password.length());
+    if (!password_flag) {
+        cout << "Password mismatch\n";
+    }
+    password_flag = false;
+    cout << "\nPlease enter new user name: ";
+    std::cin >> name;
+    cout << "\nPlease enter user e-mail: ";
+    std::cin >> email;
+    if (!new_user(login, hash, name, email, user, mysql)) {
+        cout << "This login already exists!\n";
+    }
 }

@@ -27,5 +27,5 @@ int main() {
     if (connection_success) {
         cout << "Connection with server " << connection_ip << " has been established.\n";
     }
-    show_main_menu(socket_file_descriptor);
+    show_main_menu_client(socket_file_descriptor);
 }

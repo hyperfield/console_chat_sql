@@ -1,6 +1,6 @@
 #include <iostream>
 #include <string>
-
+#include "headers/database.h"
 #include "headers/passwordShadow.h"
 #include "headers/network.h"
 #include "headers/sha1.h"
@@ -84,7 +84,7 @@ void connection_wrapper(int& socket_file_descriptor, char connection_ip[],
 }
 
 
-void send_chat_message(std::string &login, std::string &all,
+void send_chat_message(const std::string &login, const std::string &all,
                        int& socket_file_descriptor)
 {
     std::string message;
@@ -95,7 +95,7 @@ void send_chat_message(std::string &login, std::string &all,
 }
 
 
-void send_private_message(std::string &login, std::string& all,
+void send_private_message(const std::string &login, const std::string& all,
                           int& socket_file_descriptor)
 {
   std::string message, recipient;
@@ -116,7 +116,6 @@ void change_user_password_wrapper(uint* hash, std::string& login,
                                   int& socket_file_descriptor)
 {
   std::string current_password;
-  bool password_flag = false;
   cout << "Your current password: ";
   SetStdinEcho(false);
   cin >> current_password;
@@ -126,6 +125,7 @@ void change_user_password_wrapper(uint* hash, std::string& login,
   cout << std::endl;
   if (*current_hash == *hash) {
     std::string new_password;
+    bool password_flag = false;
     set_password(password_flag, new_password);
     uint *new_hash = sha1(new_password.c_str(), new_password.length());
     if (password_flag) {
@@ -213,7 +213,7 @@ void login_user(int& socket_file_descriptor)
 }
 
 
-void show_main_menu(int& socket_file_descriptor) {
+void show_main_menu_client(int& sock) {
     char key;
     while (true) {
       cout << "\nPlease choose:\n\nl - Login\nq - Quit" << endl;
@@ -235,15 +235,27 @@ void show_main_menu(int& socket_file_descriptor) {
         // }
 
       case 'l':
-        login_user(socket_file_descriptor);
+        login_user(sock);
         break;
 
       case 'q':
-        hang_up(socket_file_descriptor);
+        hang_up(sock);
         exit(0);
 
       default:
         cout << "No such option" << endl;
         }
     }
+}
+
+
+void quit(MYSQL& mysql, int& sock,
+          const string& error_msg = "", bool error = false)
+{
+    mysql_close(&mysql);
+    hang_up(sock);
+    if (error) {
+        cout << error_msg << endl;
+    }
+    cout << "Bye!" << endl;
 }
