@@ -24,10 +24,9 @@ void accept_connection_wrapper(int& sock, MYSQL& mysql)
             thread t(take_commands, ref(connection), ref(sock), ref(mysql));
             t.detach();
         }
-        // TODO: Change bool var to atomic
-        // else if (!stop_thread) {
-        //     cout << CONNECTION_ACCEPT_ERR << endl;
-        // }
+        else if (!stop_thread) {
+            cout << CONNECTION_ACCEPT_ERR << endl;
+        }
     }
 }
 
@@ -73,6 +72,7 @@ void show_main_menu_server(MYSQL& mysql, int& sock) {
 
             case 'q':
             {
+                stop_thread = true;
                 quit(mysql, sock, "", false);
                 return;
             }
