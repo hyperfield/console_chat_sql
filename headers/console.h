@@ -1,4 +1,3 @@
-#pragma once
 #include <mysql/mysql.h>
 #include <string>
 
@@ -17,5 +16,4 @@ void login_user(int& socket_file_descriptor);
 void show_main_menu_client(int& sock);
 void show_main_menu_server(MYSQL& mysql, int& sock);
 void set_password(bool &password_flag, std::string& new_password);
-void quit(MYSQL& mysql, int& sock,
-          const std::string& error_msg, bool error);
+void quit(MYSQL& mysql, const std::string& error_msg, bool error);

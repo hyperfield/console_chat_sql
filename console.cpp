@@ -1,5 +1,6 @@
 #include <iostream>
 #include <string>
+#include <unistd.h>
 #include "headers/database.h"
 #include "headers/passwordShadow.h"
 #include "headers/network.h"
@@ -249,13 +250,50 @@ void show_main_menu_client(int& sock) {
 }
 
 
-void quit(MYSQL& mysql, int& sock,
-          const string& error_msg = "", bool error = false)
+void quit(MYSQL& mysql, const string& error_msg = "", 
+          bool error = false)
 {
     mysql_close(&mysql);
-    hang_up(sock);
+    // hang_up(sock);
     if (error) {
         cout << error_msg << endl;
     }
     cout << "Bye!" << endl;
+}
+
+
+void show_main_menu_server(MYSQL& mysql, int& sock) {
+    bool stop_thread = false;
+    char key;
+    while (true) {
+        cout << endl <<
+             "Please choose:\n"
+             << "\na - Accept connections\nn - New user\nq - Quit"
+             << endl;
+        cin >> key;
+        switch (key) {
+            case 'a':
+            {
+                // TODO: Count how many connections are active
+                accept_connections(sock, mysql, stop_thread);
+                break;
+            }
+
+            case 'n': {
+                create_new_user(mysql);
+                break;
+            }
+
+            case 'q':
+            {
+                stop_thread = true;
+                quit(mysql, "", false);
+                close(sock);
+                return;
+            }
+
+            default:
+                cout << "No such option" << endl;
+        }
+    }
 }

@@ -11,78 +11,6 @@
 
 using namespace std;
 
-bool stop_thread = false;
-
-
-void accept_connection_wrapper(int& sock, MYSQL& mysql)
-{
-    while (!stop_thread) {
-        struct sockaddr_in client;
-        socklen_t length = sizeof(client);
-        int connection = accept(sock, (struct sockaddr*) &client, &length);
-        if (connection != -1 && !stop_thread) {
-            thread t(take_commands, ref(connection), ref(sock), ref(mysql));
-            t.detach();
-        }
-        else if (!stop_thread) {
-            cout << CONNECTION_ACCEPT_ERR << endl;
-        }
-    }
-}
-
-
-void accept_connections(bool& run, int& sock, MYSQL& mysql)
-{
-    if (run) {
-        thread t1(accept_connection_wrapper, ref(sock), ref(mysql));
-        t1.detach();
-        run = false;
-    }
-    cout << "Enter 'q' to go back\n";
-    char a_key(' ');
-    while (a_key != 'q') {
-        cin >> a_key;
-        if (a_key == 'q')
-            break;
-    }
-}
-
-
-void show_main_menu_server(MYSQL& mysql, int& sock) {
-    bool run_accept_connection_wrapper = true;
-    char key;
-    while (true) {
-        cout << endl <<
-             "Please choose:\n"
-             << "\na - Accept connections\nn - New user\nq - Quit"
-             << endl;
-        cin >> key;
-        switch (key) {
-            case 'a':
-            {
-                // TODO: Count how many connections are active
-                accept_connections(run_accept_connection_wrapper, sock, mysql);
-                break;
-            }
-
-            case 'n': {
-                create_new_user(mysql);
-                break;
-            }
-
-            case 'q':
-            {
-                stop_thread = true;
-                quit(mysql, sock, "", false);
-                return;
-            }
-
-            default:
-                cout << "No such option" << endl;
-        }
-    }
-}
-
 
 bool init(MYSQL& mysql, int& sock, struct sockaddr_in& client,
           socklen_t& length, User& user)
@@ -92,8 +20,7 @@ bool init(MYSQL& mysql, int& sock, struct sockaddr_in& client,
     connect_to_db(mysql);
     init_connection(sock, client, length);
     if (sock == -1) {
-        stop_thread = true;
-        quit(mysql, sock, SOCKET_ERR_MSG, true);
+        quit(mysql, SOCKET_ERR_MSG, true);
         return true;
     }
     // Init default user for current session

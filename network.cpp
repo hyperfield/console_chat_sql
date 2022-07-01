@@ -9,7 +9,6 @@
 #include "headers/sha1.h"
 #include "headers/constants.h"
 #include "headers/commands.h"
-#include "headers/main_server.h"
 
 
 void transmit_message(const Message& message, int& sock,
@@ -137,12 +136,10 @@ void establish_connection(int& sock, const char* connection_ip,
 }
 
 
-bool hang_up(int& sock) {
+void hang_up(int& sock) {
     char command[] = "hang_up";
     // TODO: bytes check
     write(sock, command, sizeof(command));
-    shutdown(sock, SHUT_RDWR);
-    return close(sock);
 }
 
 
@@ -162,24 +159,25 @@ bool change_user_password(int& sock, string& login,
 }
 
 
-void take_commands(int& connection, int& sock, MYSQL& mysql) {
-    cout << "Take commands session started\n";
+void take_commands(int& connection, MYSQL& mysql, bool& stop_thread)
+{
     char command[cmd_size], login[usr_size];
     // Add atomic flag server_is_active
-    while (true) {
+    do {
         int bytes = read(connection, command, cmd_size);
         if (!strcmp(command, "hang_up") || bytes == 0) {
             close(connection);
-            cout << "Client has disconnected\n";
             break;
         }
         process_connection_command(command, connection, login,
                                    usr_size, mysql);
-    }
+    } while (!stop_thread);
 }
 
 
-bool accept_connection(int& sock, int connection, MYSQL& mysql) {
+bool accept_connection(int& sock, int connection, MYSQL& mysql,
+                       bool& stop_thread)
+{
     int client;
     socklen_t length;
     while (true) {
@@ -188,7 +186,7 @@ bool accept_connection(int& sock, int connection, MYSQL& mysql) {
             return false;
         }
         cout << "Launching take_commands\n";
-        take_commands(connection, sock, mysql);
+        take_commands(connection, mysql, stop_thread);
         return true;
     }
 }
@@ -221,3 +219,38 @@ void init_connection(int& sock, struct sockaddr_in& client, socklen_t& length) {
         cout << CONNECTION_LISTEN_ERR << endl;
     }
 }
+
+
+void accept_connection_wrapper(int& sock, MYSQL& mysql, bool& stop_thread)
+{
+    while (!stop_thread) {
+        struct sockaddr_in client;
+        socklen_t length = sizeof(client);
+        int connection = accept(sock, (struct sockaddr*) &client, &length);
+        if (connection != -1) {
+            thread t(take_commands, ref(connection),
+                     ref(mysql), ref(stop_thread));
+            t.detach();
+        }
+        else {
+            cout << CONNECTION_ACCEPT_ERR << endl;
+            break;
+        }
+    }
+}
+
+
+void accept_connections(int& sock, MYSQL& mysql, bool& stop_thread)
+{
+    thread t1(accept_connection_wrapper, ref(sock), ref(mysql),
+              ref(stop_thread));
+    t1.detach();
+    cout << "Enter 'q' to go back\n";
+    char a_key(' ');
+    while (a_key != 'q') {
+        cin >> a_key;
+        if (a_key == 'q')
+            break;
+    }
+}
+
