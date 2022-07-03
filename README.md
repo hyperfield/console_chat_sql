@@ -12,25 +12,40 @@ Features:
     - Password hashing
     - Common and private messages
 
-## Installation
+
+To get your copy of the program from Github, make sure that `git` in installed on your system and do
+
+    git clone https://github.com/hyperfield/console_chat_sql.git
+    cd console_chat_sql
+## Installation - Client side
+### Prerequisites
+
+    g++ (GNU C++ compiler)
+    make (GNU utility to maintain groups of programs)
+
+In the program catalog, go to the `client` directory (e.g., `cd client`) and do
+
+    make
+    sudo make install
+    make clean
+
+But if you are on Windows, then `make install` is not needed.
+## Installation - Server side
 ### Prerequisites
 
     g++ (GNU C++ compiler)
     make (GNU utility to maintain groups of programs)
     MySQL
 
-To get your copy of the program from Github, make sure that `git` in installed on your system and do
+In the program catalog, go to the `server` directory (e.g., `cd client`) and do
 
-    git clone https://github.com/hyperfield/console_chat_sql.git
-    cd console_chat_sql
-
-In the program catalog, go to either the `client` or the `server` directory (e.g., `cd client`) and do
-
+    chmod +x install.sh
+    ./install.sh
     make
-    make install
+    sudo make install
     make clean
 
-But if your OS is Windows, then `make install` is not needed.
+But if your OS is Windows, then `make install` is not needed. Also, you will need to use a Bash shell on Windows to run the `install.sh` script.
 
 ## Developer:
 
