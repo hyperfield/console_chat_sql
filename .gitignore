@@ -6,6 +6,10 @@
 # chat_client
 # chat_server
 
+# Binaries
+chat_client
+chat_server
+
 # Code editors, environments #
 *.code-workspace
 *.kdev?
@@ -28,7 +32,8 @@
 *.o
 *.obj
 
-# Precompiled Headers
+# Precompiled H
+*.headers
 *.gch
 *.pch
 
@@ -56,5 +61,10 @@
 sql/
 *.sql
 TODO.md
+
+# Code analyzers
+*.tasks
+strace*
+*.log
 
 # End of https://www.toptal.com/developers/gitignore/api/c++
