@@ -34,27 +34,6 @@ void set_password(bool &password_flag, std::string& new_password)
 }
 
 
-// void set_password(bool &password_flag, std::string &new_password) {
-//   int counter = 0;
-//   while (counter++ < 3) {
-//     std::string password, confirm_password;
-//     cout << "Please enter new user password: ";
-//     SetStdinEcho(false); // Conceal password while typing
-//     cin >> password;
-//     SetStdinEcho(true);
-//     cout << "\nConfirm new user password: ";
-//     SetStdinEcho(false);
-//     cin >> confirm_password;
-//     SetStdinEcho(true);
-//     if (password == confirm_password) {
-//       password_flag = true;
-//       new_password = password;
-//       break;
-//     }
-//     cout << endl;
-//   }
-
-
 void connection_wrapper(int& socket_file_descriptor, char connection_ip[],
                         int& connection, bool& connection_success)
 {
@@ -145,12 +124,12 @@ void change_user_password_wrapper(uint* hash, std::string& login,
 }
 
 
-void show_message_menu(std::string& login, int& sock)
+void show_message_menu(const std::string& login, int& sock)
 {
     std::cout << "\nShowing messages for user " << login << std::endl;
     std::string all = "all"; // Placeholder for "all users"
     show_messages(login, all, sock);
-    char key;
+    char key = '0';
     while (key != 'q') {
       cout << "\nPlease choose:\n\nw - Send a chat message\np - Send a private "
               "message\nq - Go back\n";
@@ -215,7 +194,7 @@ void login_user(int& socket_file_descriptor)
 
 
 void show_main_menu_client(int& sock) {
-    char key;
+    char key = '0';
     while (true) {
       cout << "\nPlease choose:\n\nl - Login\nq - Quit" << endl;
       cin >> key;
@@ -254,7 +233,6 @@ void quit(MYSQL& mysql, const string& error_msg = "",
           bool error = false)
 {
     mysql_close(&mysql);
-    // hang_up(sock);
     if (error) {
         cout << error_msg << endl;
     }
