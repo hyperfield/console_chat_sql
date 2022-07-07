@@ -49,9 +49,9 @@ uint* User::getHash() const {
 }
 
 
-bool User::changePassword(uint *hash, uint* newHash) {
+bool User::changePassword(uint *hash, uint* new_hash) {
     if (*_hash == *hash) {
-        memcpy(_hash, newHash, SHA1HASHLENGTHBYTES);
+        memcpy(_hash, new_hash, SHA1HASHLENGTHBYTES);
         return true;
     }
     return false;

@@ -54,8 +54,6 @@ chat_server
 *.app
 
 # Development temporaries
-sql/
-*.sql
 TODO.md
 
 # Code analyzers

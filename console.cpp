@@ -148,7 +148,7 @@ void show_message_menu(const std::string& login, int& sock)
 
 void start_chat(std::string& login, uint* hash, int& socket_file_descriptor)
 {
-    char key;
+    char key = '\0';
     while (key != 'l') {
         std::cout << "\nPlease choose:\n\nm - Read & write messages\nc - Change password\nl - Logout" << std::endl;
         std::cin >> key;
