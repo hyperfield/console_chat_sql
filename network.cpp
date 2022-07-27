@@ -52,7 +52,7 @@ void send_new_message(const std::string &message, const std::string &author,
 
 
 bool user_exists(std::string& login, int& sock) {
-    char command[] = "check_user_exists";
+    char command[] = "check_usr_exists";
     ssize_t bytes = -1;
     bytes = write(sock, command, cmd_size);
     bool login_exists = false;
@@ -74,7 +74,7 @@ bool password_is_correct(const std::string& login, const std::string &password,
                                uint* &hash, int& sock)
 {
     hash = sha1(password.c_str(), password.length());
-    char command[] = "check_user_password";
+    char command[] = "check_usr_passwd";
     ssize_t bytes = write(sock, command, cmd_size);
     bool password_is_correct = false;
     if (bytes > 0) {
@@ -90,7 +90,7 @@ void show_messages(const std::string& login, const std::string& all, int& sock) 
     char recipient[32], sender[32], message[1024];
     std::vector<Message> messages;
     std::string end = "end";
-    char command[] = "get_messages";
+    char command[] = "get_the_messages";
     ssize_t bytes = write(sock, command, cmd_size);
     if (bytes > 0) {
         while(true) {
@@ -137,9 +137,9 @@ void establish_connection(int& sock, const char* connection_ip,
 
 
 void hang_up(int& sock) {
-    char command[] = "hang_up";
+    char command[] = "hang_up_session_";
     // TODO: bytes check
-    write(sock, command, sizeof(command));
+    write(sock, command, cmd_size);
 }
 
 
@@ -147,7 +147,7 @@ bool change_user_password(int& sock, string& login,
                           uint* current_hash, uint* new_hash)
 {
     bool password_changed = false;
-    char command[] = "change_user_password";
+    char command[] = "chang_usr_passwd";
     ssize_t bytes = write(sock, command, cmd_size);
     if (bytes > 0) {
         write(sock, login.c_str(), usr_size);
@@ -162,10 +162,9 @@ bool change_user_password(int& sock, string& login,
 void take_commands(int& connection, MYSQL& mysql, bool& stop_thread)
 {
     char command[cmd_size], login[usr_size];
-    // Add atomic flag server_is_active
     do {
         int bytes = read(connection, command, cmd_size);
-        if (!strcmp(command, "hang_up") || bytes == 0) {
+        if (!strcmp(command, "hang_up_session_") || bytes == 0) {
             close(connection);
             break;
         }

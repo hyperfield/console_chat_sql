@@ -48,7 +48,6 @@ void connection_wrapper(int& socket_file_descriptor, char connection_ip[],
     case 'i':
       cout << "Console chat server hostname (or IP address) (e.g. "
               "127.0.0.1 or mychatserver.com): ";
-      cin >> connection_ip;
       establish_connection(socket_file_descriptor, connection_ip,
                            connection, connection_success);
       break;

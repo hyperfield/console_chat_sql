@@ -40,7 +40,7 @@ const string& Message::forWhom() const {
 void Message::messageInfo(const string &login, uint* hash, const vector<User> &users) const {
     bool authenticated = false;
     if (_forUser == "all") authenticated = true;
-    authenticated = authenticateUser(login, hash, users);
+    else authenticated = authenticateUser(login, hash, users);
     if (authenticated) {
         cout << "Author: " << _author << endl;
         cout << "For: " << _forUser << endl;

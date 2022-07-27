@@ -177,12 +177,11 @@ User find_user(const std::string &login, uint* hash, MYSQL &mysql) {
     MYSQL_RES* res = mysql_store_result(&mysql);
     MYSQL_ROW row = mysql_fetch_row(res);
     uint init_hash = atoi(row[2]);
-    uint* db_hash = new uint(init_hash);
+    uint* db_hash = &init_hash;
     User found_user(found_user_row[3], db_hash, found_user_row[1], found_user_row[2]);
     if (*db_hash == *hash) {
         return found_user;
     }
-    delete db_hash;
     return default_user;
 }
 

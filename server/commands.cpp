@@ -13,12 +13,11 @@ using std::endl;
 void command_check_user_exists(int &connection, char login[], int param_size,
                                MYSQL &mysql) {
   bool usr_exists = false;
-  int bytes = read(connection, login, param_size);
+  read(connection, login, param_size);
   if (user_exists(login, mysql)) {
     usr_exists = true;
   }
-  bytes = -1;
-  bytes = write(connection, (char *)&usr_exists, size_of_bool);
+  int bytes = write(connection, (char *)&usr_exists, size_of_bool);
   if (bytes == 0) {
     cout << CONNECTION_LOST_SERVER_MSG << endl;
     // TODO: HANDLE LOST CONNECTION
@@ -115,22 +114,19 @@ void command_get_messages(int& connection, char login[], MYSQL& mysql) {
 void process_connection_command(char command[], int& connection, char login[],
                                 int param_size, MYSQL& mysql) {
     cout << "Received command " << command << endl;
-    if (!strcmp(command, "check_user_exists")) {
+    if (!strcmp(command, "check_usr_exists")) {
         command_check_user_exists(connection, login, param_size, mysql);
     }
-    else if (!strcmp(command, "check_user_password")) {
+    else if (!strcmp(command, "check_usr_passwd")) {
         command_check_user_password(connection, login, mysql);
     }
-    else if (!strcmp(command, "change_user_password")) {
+    else if (!strcmp(command, "chang_usr_passwd")) {
         command_change_user_password(connection, login, mysql);
     }
     else if (!strcmp(command, "transmit_message")) {
         command_transmit_message(connection, mysql);
     }
-    else if (!strcmp(command, "get_messages")) {
+    else if (!strcmp(command, "get_the_messages")) {
         command_get_messages(connection, login, mysql);
     }
-    // else {
-    //     cout << "No such command\n";
-    // }
 }
