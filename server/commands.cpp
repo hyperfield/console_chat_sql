@@ -17,7 +17,7 @@ void command_check_user_exists(int &connection, char login[], int param_size,
   if (user_exists(login, mysql)) {
     usr_exists = true;
   }
-  int bytes = write(connection, (char *)&usr_exists, size_of_bool);
+  int bytes = write(connection, (char *) &usr_exists, size_of_bool);
   if (bytes == 0) {
     cout << CONNECTION_LOST_SERVER_MSG << endl;
     // TODO: HANDLE LOST CONNECTION
@@ -33,7 +33,7 @@ void command_check_user_password(int& connection, char login[], MYSQL& mysql)
     bool password_correct = false;
     char pass_param[hsh_size];
     read(connection, pass_param, hsh_size);
-    uint* int_pass_param = (uint*) pass_param;
+    uint* int_pass_param = (uint*) &pass_param;
     if (check_password(login, int_pass_param, mysql))  {
         // TODO: Logger messages
         // cout << "User " << login << " was authenticated\n";
@@ -54,9 +54,9 @@ void command_change_user_password(int& connection, char login[], MYSQL& mysql)
          new_hash_param[hsh_size];
     read(connection, login_param, usr_size);
     read(connection, current_hash_param, hsh_size);
-    uint* int_old_hash_param = (uint*) current_hash_param;
+    uint* int_old_hash_param = (uint*) &current_hash_param;
     read(connection, new_hash_param, hsh_size);
-    uint* int_new_hash_param = (uint*) new_hash_param;
+    uint* int_new_hash_param = (uint*) &new_hash_param;
     User this_user = find_user(login, int_old_hash_param, mysql);
     if (this_user.getLogin() != login_param) {
         write(connection, (char*) &password_changed, size_of_bool);
