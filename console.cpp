@@ -64,18 +64,18 @@ void connection_wrapper(int& socket_file_descriptor, char connection_ip[],
 
 
 void send_chat_message(const std::string &login, const std::string &all,
-                       int& socket_file_descriptor)
+                       int &socket_file_descriptor)
 {
     std::string message;
     cout << "Message: ";
     getline(std::cin >> std::ws, message);
     send_new_message(message, login, all, socket_file_descriptor);
-    show_messages(login, all, socket_file_descriptor);
+    show_messages(socket_file_descriptor);
 }
 
 
-void send_private_message(const std::string &login, const std::string& all,
-                          int& socket_file_descriptor)
+void send_private_message(const std::string &login, const std::string &all,
+                          int &socket_file_descriptor)
 {
   std::string message, recipient;
   cout << "Recipient: ";
@@ -87,12 +87,12 @@ void send_private_message(const std::string &login, const std::string& all,
     cout << "Private message for " << recipient << ": ";
     getline(std::cin >> std::ws, message);
     send_new_message(message, login, recipient, socket_file_descriptor);
-    show_messages(login, all, socket_file_descriptor);
+    show_messages(socket_file_descriptor);
 }
 
 
-void change_user_password_wrapper(uint* hash, std::string& login,
-                                  int& socket_file_descriptor)
+void change_user_password_wrapper(uint *hash, std::string &login,
+                                  int &socket_file_descriptor)
 {
   std::string current_password;
   cout << "Your current password: ";
@@ -123,11 +123,11 @@ void change_user_password_wrapper(uint* hash, std::string& login,
 }
 
 
-void show_message_menu(const std::string& login, int& sock)
+void show_message_menu(const std::string &login, int &sock)
 {
     std::cout << "\nShowing messages for user " << login << std::endl;
     std::string all = "all"; // Placeholder for "all users"
-    show_messages(login, all, sock);
+    show_messages(sock);
     char key = '0';
     while (key != 'q') {
       cout << "\nPlease choose:\n\nw - Send a chat message\np - Send a private "
@@ -145,7 +145,7 @@ void show_message_menu(const std::string& login, int& sock)
     }
 }
 
-void start_chat(std::string& login, uint* hash, int& socket_file_descriptor)
+void start_chat(std::string &login, uint *hash, int &socket_file_descriptor)
 {
     char key = '\0';
     while (key != 'l') {
@@ -165,7 +165,7 @@ void start_chat(std::string& login, uint* hash, int& socket_file_descriptor)
 }
 
 
-void login_user(int& socket_file_descriptor)
+void login_user(int &socket_file_descriptor)
 {
     std::string login, password;
     cout << "Login: ";
@@ -178,7 +178,7 @@ void login_user(int& socket_file_descriptor)
             std::cin >> password;
             SetStdinEcho(true);
             cout << std::endl;
-            if (password_is_correct(login, password, hash, socket_file_descriptor)) {
+            if (password_is_correct(password, hash, socket_file_descriptor)) {
                 std::cout << login << " successfully logged in\n";
                 start_chat(login, hash, socket_file_descriptor);
                 break;
@@ -239,7 +239,7 @@ void quit(MYSQL& mysql, const string& error_msg = "",
 }
 
 
-void show_main_menu_server(MYSQL& mysql, int& sock) {
+void show_main_menu_server(MYSQL &mysql, int &sock) {
     bool stop_thread = false;
     char key;
     while (true) {

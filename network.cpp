@@ -11,8 +11,8 @@
 #include "headers/commands.h"
 
 
-void transmit_message(const Message& message, int& sock,
-                      bool& message_is_accepted)
+void transmit_message(const Message &message, int &sock,
+                      bool &message_is_accepted)
 {
     message_is_accepted = false;
     char command[] = "transmit_message";
@@ -43,7 +43,7 @@ void transmit_message(const Message& message, int& sock,
 
 
 void send_new_message(const std::string &message, const std::string &author,
-                            const std::string &for_user, int& socket_file_descriptor)
+                            const std::string &for_user, int &socket_file_descriptor)
 {
     Message new_message(message, author, for_user);
     bool transmission_result = false;
@@ -51,7 +51,7 @@ void send_new_message(const std::string &message, const std::string &author,
 }
 
 
-bool user_exists(std::string& login, int& sock) {
+bool user_exists(std::string &login, int &sock) {
     char command[] = "check_usr_exists";
     ssize_t bytes = -1;
     bytes = write(sock, command, cmd_size);
@@ -70,8 +70,8 @@ bool user_exists(std::string& login, int& sock) {
 }
 
 
-bool password_is_correct(const std::string& login, const std::string &password,
-                               uint* &hash, int& sock)
+bool password_is_correct(const std::string &password,
+                               uint* &hash, int &sock)
 {
     hash = sha1(password.c_str(), password.length());
     char command[] = "check_usr_passwd";
@@ -86,29 +86,47 @@ bool password_is_correct(const std::string& login, const std::string &password,
 }
 
 
-void show_messages(const std::string& login, const std::string& all, int& sock) {
-    char recipient[32], sender[32], message[1024];
+void show_messages(int &sock) {
+    char recipient[usr_size], sender[usr_size], message[msg_size];
     std::vector<Message> messages;
     std::string end = "end";
     char command[] = "get_the_messages";
-    ssize_t bytes = write(sock, command, cmd_size);
+    int bytes = write(sock, command, cmd_size);
+    int counter = 0;
     if (bytes > 0) {
         while(true) {
-            read(sock, (char*) &message, msg_size);
+            counter++;
+            bytes = read(sock, (char*) &message, msg_size);
+            if (bytes <= 0) {
+                cout << "Communication error\n";
+                break;
+            }
+            cout << "Reading first part of message\n";
             if (message == end) break;
-            read(sock, (char*) &sender, usr_size);
+            bytes = read(sock, (char*) &sender, usr_size);
+            if (bytes <= 0) {
+                cout << "Communication error\n";
+                break;
+            }
             bytes = read(sock, (char*) &recipient, usr_size);
+            if (bytes <= 0) {
+                cout << "Communication error\n";
+                break;
+            }
+            cout << "Read second part of message\n";
             Message new_message(message, sender, recipient);
             messages.push_back(new_message);
+            cout << "counter: " << counter << endl;
             // Reset the char arrays
-            std::fill(message, message+1024, 0);
-            std::fill(sender, sender+32, 0);
-            std::fill(recipient, recipient+32, 0);
+            std::fill(message, message+msg_size, 0);
+            std::fill(sender, sender+usr_size, 0);
+            std::fill(recipient, recipient+usr_size, 0);
             if (bytes <= 0) {
                 break;
             }
         }
     }
+    cout << "Done the loop\n";
     // Enlist messages received from server
     for (Message& msg : messages) {
         cout << msg.getAuthor() << " => " << msg.forWhom() << ": " << msg.getMessage() << endl;
@@ -119,10 +137,10 @@ void show_messages(const std::string& login, const std::string& all, int& sock) 
 }
 
 
-void establish_connection(int& sock, const char* connection_ip,
-                          int& connection, bool& connection_success)
+void establish_connection(int &sock, const char *connection_ip,
+                          int &connection, bool &connection_success)
 {
-    struct sockaddr_in serveraddress, client;
+    struct sockaddr_in serveraddress;
     sock = socket(AF_INET, SOCK_STREAM, 0); // Create a socket
     if(sock == -1) {
         return;
@@ -143,8 +161,8 @@ void hang_up(int& sock) {
 }
 
 
-bool change_user_password(int& sock, string& login,
-                          uint* current_hash, uint* new_hash)
+bool change_user_password(int &sock, string &login,
+                          uint *current_hash, uint *new_hash)
 {
     bool password_changed = false;
     char command[] = "chang_usr_passwd";
@@ -159,7 +177,7 @@ bool change_user_password(int& sock, string& login,
 }
 
 
-void take_commands(int& connection, MYSQL& mysql, bool& stop_thread)
+void take_commands(int &connection, MYSQL &mysql, bool &stop_thread)
 {
     char command[cmd_size], login[usr_size];
     do {
@@ -174,8 +192,8 @@ void take_commands(int& connection, MYSQL& mysql, bool& stop_thread)
 }
 
 
-bool accept_connection(int& sock, int connection, MYSQL& mysql,
-                       bool& stop_thread)
+bool accept_connection(int &sock, int &connection, MYSQL &mysql,
+                       bool &stop_thread)
 {
     int client;
     socklen_t length;
@@ -184,7 +202,6 @@ bool accept_connection(int& sock, int connection, MYSQL& mysql,
         if(conn < 0) {
             return false;
         }
-        cout << "Launching take_commands\n";
         take_commands(connection, mysql, stop_thread);
         return true;
     }
@@ -220,13 +237,14 @@ void init_connection(int& sock, struct sockaddr_in& client, socklen_t& length) {
 }
 
 
-void accept_connection_wrapper(int& sock, MYSQL& mysql, bool& stop_thread)
+void accept_connection_wrapper(int &sock, MYSQL &mysql, bool &stop_thread)
 {
     while (!stop_thread) {
         struct sockaddr_in client;
         socklen_t length = sizeof(client);
         int connection = accept(sock, (struct sockaddr*) &client, &length);
         if (connection != -1) {
+            cout << "Connection with client established\n";
             thread t(take_commands, ref(connection),
                      ref(mysql), ref(stop_thread));
             t.detach();

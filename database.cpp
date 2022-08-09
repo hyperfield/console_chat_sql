@@ -83,8 +83,8 @@ const std::string get_user_by_id(int user_id, MYSQL& mysql) {
 }
 
 
-const vector<Message> read_messages_from_db(int how_many, char login[],
-                                            MYSQL &mysql)
+const vector<Message> read_messages_from_db(
+    int how_many, char login[], MYSQL &mysql)
 {
   std::vector<Message> messages;
   std::string receiver;
@@ -117,7 +117,8 @@ const vector<Message> read_messages_from_db(int how_many, char login[],
 }
 
 
-bool write_message_to_db(const Message& message_obj, MYSQL& mysql) {
+bool write_message_to_db(const Message& message_obj, MYSQL& mysql)
+{
     std::string query = "INSERT INTO messages("
                    "`sender_id`, `receiver_id`, `message`"
                    ") VALUES('";
@@ -134,8 +135,6 @@ bool write_message_to_db(const Message& message_obj, MYSQL& mysql) {
     mysql_real_escape_string(&mysql, escaped_message, message.c_str(), len);
     query += escaped_message;
     query += "')";
-    std::cout << "Unescaped message: " << message << std::endl;
-    std::cout << "Escaped message: " << escaped_message << std::endl;
     int result = mysql_query(&mysql, query.c_str());
     return !result;
 }
@@ -186,7 +185,7 @@ User find_user(const std::string &login, uint* hash, MYSQL &mysql) {
 }
 
 
-bool check_password(const std::string &login, uint* &hash, MYSQL &mysql)
+bool check_password(const std::string &login, uint* const &hash, MYSQL &mysql)
 {
     User check_pwd_user = find_user(login, hash, mysql);
     return (check_pwd_user.getLogin() == login && *check_pwd_user.getHash() == *hash);
